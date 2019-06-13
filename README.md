@@ -8,11 +8,14 @@ This repository contains Smart Contract code in Solidity (using Truffle), tests 
 
 To install, download or clone the repo, then:
 
-'npm install --g python'
-'npm install --g node-gyp'
+https://gist.github.com/jtrefry/fd0ea70a89e2c3b7779c
+
+npm install --global --production windows-build-tools
+(be sure to run as admin)
+npm config set msvs_version 2017 --global
+
 'npm i --save ethereum/web3.js'
 `npm install`
-'npm install truffle-hdwallet-provider'
 `truffle compile`
 
 ganache-cli -a 50 -l 9999999 -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
@@ -27,6 +30,8 @@ To run truffle tests:
 To use the dapp:
 
 `truffle migrate`
+npm uninstall webpack webpack-cli webpack-dev-server
+npm install --save-dev webpack@latest webpack-cli@latest webpack-dev-server@latest
 `npm run dapp`
 
 To view dapp:
@@ -34,7 +39,7 @@ To view dapp:
 `http://localhost:8000`
 
 ## Develop Server
-
+be sure to run bash
 `npm run server`
 `truffle test ./test/oracles.js`
 

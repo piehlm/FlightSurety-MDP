@@ -12,25 +12,35 @@ import './flightsurety.css';
 
         // Read transaction
         contract.isOperational((error, result) => {
-            console.log(error,result);
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
     
-
-        // User-submitted transaction
+        // User-submitted transactions
         DOM.elid('submit-oracle').addEventListener('click', () => {
-            let flight = DOM.elid('flight-number').value;
+            let airline = DOM.elid('airline-name').value;
+            let flight = DOM.elid('flight-name').value;
+            let timestamp = DOM.elid('timestamp-id').value;
             // Write transaction
-            contract.fetchFlightStatus(flight, (error, result) => {
-                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp} ]);
+            contract.fetchFlightStatus(airline, flight, timestamp, (error, result) => {
+                display('Oracles', 'Trigger oracles', [ { label: 'Fetch Flight Status', error: error, value: result.flight + ' ' + result.timestamp}]);
             });
+        })
+        DOM.elid('buy-insurance').addEventListener('click', () => {
+            let passenger = DOM.elid('passenger-address').value;
+            let airline = DOM.elid('airline-name').value;
+            let flightName = DOM.elid('flight-name').value;
+            let timestamp = DOM.elid('timestamp-id').value;
+            let insuranceAmount = DOM.elid('ins-amount').value;
+
+            contract.buyInsurance(airline, passenger, flightName, timestamp, insuranceAmount, (error, result) => {
+                display('Buy Insurance: ',' User clicked on buy insurance button', [ { label: 'Buy Insurance: ', error: error } ]);
+            })
         })
     
     });
     
 
 })();
-
 
 function display(title, description, results) {
     let displayDiv = DOM.elid("display-wrapper");
@@ -46,10 +56,3 @@ function display(title, description, results) {
     displayDiv.append(section);
 
 }
-
-
-
-
-
-
-

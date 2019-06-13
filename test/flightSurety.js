@@ -6,7 +6,7 @@ contract('Flight Surety Tests', async (accounts) => {
   var config;
   before('setup contract', async () => {
     config = await Test.Config(accounts);
-    await config.flightSuretyData.authorizeCaller(config.flightSuretyApp.address);
+    await config.flightSuretyData.authorizeCaller(config.flightSuretyApp.address, {from: config.owner});
   });
 
   /****************************************************************************************/
@@ -16,7 +16,7 @@ contract('Flight Surety Tests', async (accounts) => {
   it(`(multiparty) has correct initial isOperational() value`, async function () {
 
     // Get operating status
-    let status = await config.flightSuretyData.isOperational.call();
+    let status = await config.flightSuretyApp.isOperational.call();
     assert.equal(status, true, "Incorrect initial operating status value");
 
   });
@@ -88,7 +88,7 @@ contract('Flight Surety Tests', async (accounts) => {
     catch(e) {
 
     }
-    let result = await config.flightSuretyData.isAirline.call(newAirline); 
+    let result = await config.flightSuretyApp.isAirline.call(newAirline); 
 
     // ASSERT
     assert.equal(result, false, "Airline should not be able to register another airline if it hasn't provided funding");
@@ -143,16 +143,16 @@ contract('Flight Surety Tests', async (accounts) => {
     let newAirline4 = accounts[4];
     let newAirline5 = accounts[5];
   
-    await config.flightSuretyData.fund({from: newAirline2});
-    await config.flightSuretyData.fund({from: newAirline3}); 
-    await config.flightSuretyData.fund({from: newAirline4}); 
+    await config.flightSuretyApp.fund({from: newAirline2, value: 10});
+    await config.flightSuretyApp.fund({from: newAirline3, value: 10}); 
+    await config.flightSuretyApp.fund({from: newAirline4, value: 10}); 
 
     console.log("Number of airlines : "+ await config.flightSuretyData.GetAirlineCount());
     console.log("Funded airlines count: "+ await config.flightSuretyData.GetFundedAirlineCount());
         
-    assert.equal(await config.flightSuretyData.isAirline.call(newAirline2), true, "second airline is not funded yet.");
-    assert.equal(await config.flightSuretyData.isAirline.call(newAirline3), true, "third airline is not funded yet.");
-    assert.equal(await config.flightSuretyData.isAirline.call(newAirline4), true, "fourth airline is not funded yet.");
+    assert.equal(await config.flightSuretyApp.isAirline.call(newAirline2), true, "second airline is not funded yet.");
+    assert.equal(await config.flightSuretyApp.isAirline.call(newAirline3), true, "third airline is not funded yet.");
+    assert.equal(await config.flightSuretyApp.isAirline.call(newAirline4), true, "fourth airline is not funded yet.");
 
     // ACT
     try {
@@ -163,7 +163,7 @@ contract('Flight Surety Tests', async (accounts) => {
     }
     let resultnewAirline5 = await config.flightSuretyData.isRegisteredAirline.call(newAirline5); 
     // ASSERT
-    assert.equal(resultnewAirline5, true,  "The 5th airline should be accepted afte getting 2 votes out of 4");
+    assert.equal(resultnewAirline5, true,  "The 5th airline should be accepted after getting 2 votes out of 4");
     });
 
 // Flight Tests
@@ -171,25 +171,41 @@ contract('Flight Surety Tests', async (accounts) => {
        // ARRANGE
       let newAirline2 = accounts[2];
       
-      assert.equal(await config.flightSuretyData.isAirline.call(newAirline2), true, "second airline is not funded yet.");
+      assert.equal(await config.flightSuretyApp.isAirline.call(newAirline2), true, "second airline is not funded yet.");
   
       // ACT
       try {
-         resultnewAirline2 = await config.flightSuretyData.registerFlight.call(newAirline2, "1234", "6/10/2019", {from: newAirline2});
+        await config.flightSuretyApp.registerFlight(newAirline2, "1234", "2019-06-12", {from: newAirline2});
       }
       catch(e) {
           console.log(e.message)
       }
       // ASSERT
+      let resultnewAirline2 = await config.flightSuretyData.isRegisteredFlight(await config.flightSuretyData.getFlightKey(accounts[2], "1234", "2019-06-12"));
+      console.log(resultnewAirline2);
       assert.equal(resultnewAirline2, true,  "The flight was not registered");
     });
 
     it('Passengers can choose from a fixed list of flight numbers', async() =>{
-      let flight = await config.flightSuretyData.getFlight.call(await config.flightSuretyData.getFlightKey(accounts[2], "1234", "6/10/2019"));
+      let flight = await config.flightSuretyData.getFlight.call(await config.flightSuretyData.getFlightKey(accounts[2], "1234", "2019-06-12"));
         console.log(flight[0]);
         console.log(flight[1]);
         console.log(flight[2]);
         console.log(flight[3]);
         console.log(flight[4]);    
     });
-  });
+
+    it('Passengers may pay up to 1 ether for purchasing flight insurance.', async()=>{
+        let pass = accounts[6];
+        await config.flightSuretyApp.buyInsurance(accounts[2], pass, "1234", "2019-06-12", {value: 1});
+    });
+
+    it('Passengers can see their insurance', async() =>{
+        let pass = accounts[6];
+        let fltKey = await config.flightSuretyData.getFlightKey(accounts[2], "1234", "2019-06-12");
+        let ins = await config.flightSuretyData.getInsurance.call(fltKey, pass);
+          console.log(ins[0]);
+          console.log(ins[1]);
+      });
+ 
+});
