@@ -10,10 +10,10 @@ export default class Contract {
         this.web3 = new Web3(new Web3.providers.HttpProvider(config.url));
         this.flightSuretyApp = new this.web3.eth.Contract(FlightSuretyApp.abi, config.appAddress);
         this.flightSuretyData = new this.web3.eth.Contract(FlightSuretyData.abi, config.dataAddress);
-        this.initialize(callback);
         this.owner = null;
         this.airlines = [];
         this.passengers = [];
+        this.initialize(callback);
     }
 
     async initialize(callback) {
@@ -40,31 +40,38 @@ export default class Contract {
 
         console.log("Airlines: "+this.airlines);
         for(let i = 0; i< this.airlines.length; i++){
-            try{
-                await this.flightSuretyApp.methods.registerAirline(this.airlines[i], {from: this.owner, gas: 1500000});
-            }catch(error){
-                console.log(error);
+// register Airlines
+            if (i > 0) {
+                try{
+                    console.log(await this.flightSuretyApp.methods.registerAirline(this.airlines[i]).call({from: this.owner}));
+                    console.log(this.airlines[i]);
+                }catch(error){
+                    console.log(error);
+                }
+                try{
+                    await this.flightSuretyApp.methods.fund().call({from: this.airlines[i], value: this.web3.utils.toWei('10','ether'), gas:1500000});
+                }catch(error){
+                    console.log(error);
+                }    
             }
-            try{
-                await this.flightSuretyData.methods.fund(this.airlines[i], 10, {from: this.airlines[i], value: 10, gas:1500000});
-            }catch(error){
-                console.log(error);
-            }
-    // register flights for airlines
+// register flights for airlines
             try {
-                await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][0], "2019-06-12", {from: this.airlines[i]});
+                console.log(await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][0], "2019-06-12").call({from: this.airlines[i]}));
+                console.log(flts[i][0]);
             }
             catch(e) {
                 console.log(e.message)
             }
             try {
-                await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][1], "2019-06-13", {from: this.airlines[i]});
+                console.log(await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][1], "2019-06-13", {from: this.airlines[i]}));
+                console.log(flts[i][1]);
             }
             catch(e) {
                 console.log(e.message)
             }
             try {
-                await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][2], "2019-06-15", {from: this.airlines[i]});
+                console.log(await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][2], "2019-06-15", {from: this.airlines[i]}));
+                console.log(flts[i][2]);
             }
             catch(e) {
                 console.log(e.message)
@@ -78,8 +85,25 @@ export default class Contract {
        self.flightSuretyApp.methods.isOperational()
             .call({ from: self.owner}, callback);
     }
-    buyInsurance(airline, passenger, flightName, timestamp, insuranceAmount, callback){
+    GetAirlineCount(callback) {
         let self = this;
+        self.flightSuretyApp.methods.GetAirlineCount()
+             .call({ from: self.owner}, callback);
+     }
+     isRegisteredAirline(airline, callback) {
+        let self = this;
+        self.flightSuretyApp.methods.isRegisteredAirline(airline)
+             .call({ from: self.owner}, callback);
+     }
+     isAirline(airline, callback) {
+        let self = this;
+        console.log("isairline: "+airline);
+        self.flightSuretyApp.methods.isAirline(airline)
+             .call({ from: self.owner}, callback);
+     }
+     buyInsurance(airline, passenger, flightName, timestamp, insuranceAmount, callback){
+        let self = this;
+        console.log("buy insurance: "+self.owner);
         self.flightSuretyApp.methods.buyInsurance(airline, passenger, flightName, timestamp)
         .send({from: passenger, value: insuranceAmount}, (error, result) => {
             callback(error, result);

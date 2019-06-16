@@ -77,7 +77,6 @@ contract FlightSuretyApp {
     /********************************************************************************************/
     /*                                       UTILITY FUNCTIONS                                  */
     /********************************************************************************************/
-
     function isOperational()
                             public
                             view
@@ -111,21 +110,25 @@ contract FlightSuretyApp {
     }
 
 //  Airline Functions
-    function isAirline
-                            (
-                                address airline
-                            )
+    function isAirline(address airline)
                             external
                             returns(bool)
     {
         return(contractData.isAirline(airline));
     }
 
-    function fund()
-        external
-        payable
+    function isRegisteredAirline(address _NewAirlineAddress)
+        external returns(bool)
     {
-        contractData.fund(msg.sender, msg.value);
+        return(contractData.isRegisteredAirline(_NewAirlineAddress));
+    }
+
+    function GetAirlineCount()
+                            external
+                            returns(uint256 count)
+    {
+        count = contractData.GetAirlineCount();
+        return(count);
     }
 
    /**
@@ -137,13 +140,14 @@ contract FlightSuretyApp {
                             )
                             external
                             requireIsOperational
-                            returns(bool success, uint256 votes)
+                            returns(bool success)
     {
-        require(contractData.isAirline(msg.sender), "Airline is not funded");
+        require(contractData.isAirline(msg.sender), "Requesting Airline is not funded");
 
         uint256 numAirlines = contractData.GetAirlineCount();
         if (numAirlines <= 4) {
             contractData.registerAirline(airline);
+            success = contractData.isRegisteredAirline(airline);
         }
         if (numAirlines > 4) {
             bool isDuplicate = false;
@@ -162,9 +166,15 @@ contract FlightSuretyApp {
                 success = contractData.isRegisteredAirline(airline);
             }
         }
-        return (success, numVotes);
+        return(success);
     }
 
+    function fund()
+        public
+        payable
+    {
+        contractData.fund(msg.sender, msg.value);
+    }
 
 //----------------------------------------------------------------------------------------------
 //  Flight functions
@@ -178,7 +188,7 @@ contract FlightSuretyApp {
                             requireIsOperational
                             returns(bool)
     {
-        contractData.registerFlight(_airline, _flt, _date);
+        return(contractData.registerFlight(_airline, _flt, _date));
     }
 //----------------------------------------------------------------------------------------------
 // Insurance functions
@@ -424,7 +434,7 @@ contract FlightSuretyData {
     function GetAirlineCount() external returns(uint256 count) {}
     function GetNumVotes() external returns(uint256 count) {}
     function registerAirline(address _NewAirlineAddress) external {}
-    function fund(address _airline, uint256 fundAmount) external payable {}
+    function fund(address _airline, uint256 fundAmount) public payable {}
     function getFlightKey(address airline, string memory flight, string memory timestamp) public pure returns(bytes32) {}
     function registerFlight(address _airline, string _flt, string _date) external returns(bool) {}
     function isRegisteredFlight(bytes32 key) public view returns(bool){}

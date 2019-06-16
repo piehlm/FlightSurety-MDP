@@ -133,10 +133,12 @@ contract FlightSuretyData {
                             )
                             external
                             requireIsOperational
+                            returns(bool)
     {
         airlines[airline].isRegistered = true;
         airlines[airline].isFunded = false;
         numAirlines = numAirlines.add(1);
+        return(true);
     }
 
     /**
