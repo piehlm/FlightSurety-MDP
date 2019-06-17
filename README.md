@@ -50,7 +50,36 @@ To build dapp for prod:
 
 Deploy the contents of the ./dapp folder
 
+# test Data, using above Ganache
+Owner: 0x627306090abaB3A6e1400e9345bC60c78a8BEf57
 
+Passenger: 0x69e1CB5cFcA8A311586e3406ed0301C06fb839a2
+
+this.config.appAddress: 0x38cF23C52Bb4B13F051Aec09580a2dE845a7FA35
+
+
+Airlines: 
+0x627306090abaB3A6e1400e9345bC60c78a8BEf57
+    Flights + Date
+    '123' - "2019-06-12"
+    '231' - "2019-06-13"
+    '334' - "2019-06-15"
+0xf17f52151EbEF6C7334FAD080c5704D77216b732
+    Flights + Date
+    '111' - "2019-06-12"
+    '222' - "2019-06-13"
+    '333' - "2019-06-15"
+0xC5fdf4076b8F3A5357c5E395ab970B5B54098Fef
+    Flights + Date
+    '321' - "2019-06-12"
+    '223' - "2019-06-13"
+    '012' - "2019-06-15"
+0x821aEa9a577a9b44299B9c15c88cf3087F3b5544
+    Flights + Date
+    '577' - "2019-06-12"
+    '632' - "2019-06-13"
+    '010' - "2019-06-15"
+    
 ## Resources
 
 * [How does Ethereum work anyway?](https://medium.com/@preethikasireddy/how-does-ethereum-work-anyway-22d1df506369)
