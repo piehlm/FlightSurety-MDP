@@ -71,7 +71,7 @@ contract FlightSuretyApp {
 
     function() external payable {
         if(msg.value > 10 ether){
-            contractData.fund(msg.sender, msg.value);
+            contractData.fund.value(msg.value)(msg.sender, msg.value);
         }
     }
     /********************************************************************************************/
@@ -143,6 +143,7 @@ contract FlightSuretyApp {
                             returns(bool success)
     {
         require(contractData.isAirline(msg.sender), "Requesting Airline is not funded");
+        require(contractData.isRegisteredAirline(airline) == false, "Airline already registered");
 
         uint256 numAirlines = contractData.GetAirlineCount();
         if (numAirlines <= 4) {
@@ -173,7 +174,7 @@ contract FlightSuretyApp {
         public
         payable
     {
-        contractData.fund(msg.sender, msg.value);
+        contractData.fund.value(msg.value)(msg.sender, msg.value);
     }
 
 //----------------------------------------------------------------------------------------------
@@ -188,7 +189,22 @@ contract FlightSuretyApp {
                             requireIsOperational
                             returns(bool)
     {
+        require(isRegisteredFlight(_airline, _flt, _date) == false, "Flight already registered");
         return(contractData.registerFlight(_airline, _flt, _date));
+    }
+
+    function isRegisteredFlight
+    (
+        address _airline,
+        string _flt,
+        string _date
+    )
+        public
+        view
+        returns(bool)
+    {
+        bytes32 key = contractData.getFlightKey(_airline, _flt, _date);
+        return(contractData.isRegisteredFlight(key));
     }
 //----------------------------------------------------------------------------------------------
 // Insurance functions
@@ -201,12 +217,14 @@ contract FlightSuretyApp {
                             )
                             external
                             payable
+                            returns(bool)
     {
         require(contractData.isAirline(_airline), "Airline is not funded");
         bytes32 fltKey = contractData.getFlightKey(_airline, _flt, _timestamp);
         require(contractData.isRegisteredFlight(fltKey), "Flight is not registered.");
         require(msg.value <= 1 ether," more than one ether.");
-        contractData.buyInsurance(fltKey, _passenger, msg.value);
+        bool success = contractData.buyInsurance.value(msg.value)(fltKey, _passenger, msg.value);
+        return success;
     }
 
     function payInsurance
@@ -234,10 +252,12 @@ contract FlightSuretyApp {
                                 uint8 _statusCode
                             )
                                 internal
+                                returns(uint256 insTotal)
     {
         bytes32 flightKey = contractData.getFlightKey(_airline, _flt, _timestamp);
-        contractData.processFlightStatus(flightKey, _statusCode);
+        insTotal = contractData.processFlightStatus(flightKey, _statusCode);
         emit flightProcessed(_airline, _flt, _timestamp, _statusCode);
+        return(insTotal);
     }
 
 //----------------------------------------------------------------------------------------------
@@ -438,7 +458,7 @@ contract FlightSuretyData {
     function getFlightKey(address airline, string memory flight, string memory timestamp) public pure returns(bytes32) {}
     function registerFlight(address _airline, string _flt, string _date) external returns(bool) {}
     function isRegisteredFlight(bytes32 key) public view returns(bool){}
-    function buyInsurance(bytes32 manifestID, address passenger, uint256 insuranceAmount) external {}
+    function buyInsurance(bytes32 manifestID, address passenger, uint256 insuranceAmount) external payable returns(bool) {}
     function payInsurance(bytes32 manifestID, address passenger) external payable {}
-    function processFlightStatus(bytes32 flightKey,uint8 _statusCode) external {}
+    function processFlightStatus(bytes32 flightKey,uint8 _statusCode) external returns(uint256 insTotal) {}
 }

@@ -190,7 +190,7 @@ contract FlightSuretyData {
                             payable
                             requireAirlineRegistered(_airline)
     {
-        require(fundAmount >= 10, "Insufficient funding value.");
+        require(fundAmount >= 10 ether, "Insufficient funding value.");
 //        recipient.transfer(fundAmount); //// TODO causes test to fail; not funded
         airlines[_airline].isFunded = true;
         authorizedCallers[_airline] = true;
@@ -298,6 +298,7 @@ contract FlightSuretyData {
                             )
                             external
                             payable
+                            returns(bool)
     {
         bytes32 manifestId = getManifestId(fltKey, _passenger);
         require(manifestList[manifestId].isTaken == false, "This insurance is already taken.");
@@ -306,6 +307,7 @@ contract FlightSuretyData {
         manifestList[manifestId].passenger = _passenger;
         manifestList[manifestId].isTaken = true;
         passengerList[fltKey].push(_passenger);
+        return(true);
     }
 
     function getInsurance(bytes32 key, address _passenger) public view returns(uint256, bool){
@@ -322,11 +324,14 @@ contract FlightSuretyData {
                                     uint creditAmount
                                 )
                                 internal
+                                returns(uint256 insTotal)
     {
+        insTotal = 0;
         for (uint i = 0; i < passengerList[_fltKey].length; i++) {
             bytes32 manifestId = getManifestId(_fltKey, passengerList[_fltKey][i]);
             if (manifestList[manifestId].isTaken == true) {
                 manifestList[manifestId].insuranceAmount = manifestList[manifestId].insuranceAmount.mul(creditAmount).div(100);
+                insTotal = insTotal.add(manifestList[manifestId].insuranceAmount);
             }
         }
     }
@@ -346,11 +351,24 @@ contract FlightSuretyData {
         bytes32 manifestId = getManifestId(fltKey, _passenger);
         require(manifestList[manifestId].isTaken == true, "Insurance was not taken.");
         Insurance memory insurance = manifestList[manifestId];
-        require(address(this).balance > insurance.insuranceAmount,"address(this).balance > insurance.insuraceAmount");
+        require(address(this).balance > insurance.insuranceAmount,"address(this).balance < insurance.insuranceAmount");
         uint amount = insurance.insuranceAmount;
         insurance.insuranceAmount = 0;//reset
         address passenger = insurance.passenger;
         passenger.transfer(amount);
+    }
+
+    function getInsuranceAmount
+                            (
+                                bytes32 fltKey,
+                                address _passenger
+                            )
+                            external
+                            returns(uint256)
+    {
+        bytes32 manifestId = getManifestId(fltKey, _passenger);
+        Insurance memory insurance = manifestList[manifestId];
+        return(insurance.insuranceAmount);
     }
 
     function processFlightStatus
@@ -359,6 +377,7 @@ contract FlightSuretyData {
                                 uint8 _statusCode
                             )
                                 external
+                                returns(uint256 insTotal)
     {
         // Check (modifiers)
         Flight storage flight = flights[flightKey];
@@ -366,12 +385,12 @@ contract FlightSuretyData {
         flight.statusCode = _statusCode;
         // Interact
         // 20 = "flight delay due to airline"
+        insTotal = 0;
         if (_statusCode == STATUS_CODE_LATE_AIRLINE)
-            creditInsurees(flightKey, 150);
+            insTotal = insTotal.add(creditInsurees(flightKey, 150));
         else
             creditInsurees(flightKey, 0);
     }
-
 
 }
 

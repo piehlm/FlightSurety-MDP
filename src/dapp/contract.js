@@ -42,40 +42,29 @@ export default class Contract {
         for(let i = 0; i< this.airlines.length; i++){
 // register Airlines
             if (i > 0) {
-                try{
-                    console.log(await this.flightSuretyApp.methods.registerAirline(this.airlines[i]).call({from: this.owner}));
-                    console.log(this.airlines[i]);
-                }catch(error){
-                    console.log(error);
-                }
-                try{
-                    await this.flightSuretyApp.methods.fund().call({from: this.airlines[i], value: this.web3.utils.toWei('10','ether'), gas:1500000});
-                }catch(error){
-                    console.log(error);
-                }    
+                this.flightSuretyApp.methods.registerAirline(this.airlines[i])
+                .send({from: this.owner, gas:650000}, (error, result) => {
+                    console.log(this.airlines[i] + ' registered');
+                });
+
+                this.flightSuretyApp.methods.fund()
+                .send({from: this.airlines[i], value: 10, gas:650000}, (error, result) => {
+                    console.log(this.airlines[i] + ' funded');
+                });
             }
 // register flights for airlines
-            try {
-                console.log(await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][0], "2019-06-12").call({from: this.airlines[i]}));
-                console.log(flts[i][0]);
-            }
-            catch(e) {
-                console.log(e.message)
-            }
-            try {
-                console.log(await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][1], "2019-06-13", {from: this.airlines[i]}));
-                console.log(flts[i][1]);
-            }
-            catch(e) {
-                console.log(e.message)
-            }
-            try {
-                console.log(await this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][2], "2019-06-15", {from: this.airlines[i]}));
-                console.log(flts[i][2]);
-            }
-            catch(e) {
-                console.log(e.message)
-            }
+            this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][0], "2019-06-12")
+            .send({from: this.airlines[i], gas:650000}, (error, result) => {
+                console.log(this.airlines[i] + ' ' + flts[i][0] + ' ' + '2019-06-12 Flight Registered');
+            });
+            this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][1], "2019-06-13")
+            .send({from: this.airlines[i], gas:650000}, (error, result) => {
+                console.log(this.airlines[i] + ' ' + flts[i][1] + ' ' + '2019-06-13 Flight Registered');
+            });
+            this.flightSuretyApp.methods.registerFlight(this.airlines[i], flts[i][2], "2019-06-15")
+            .send({from: this.airlines[i], gas:650000}, (error, result) => {
+                console.log(this.airlines[i] + ' ' + flts[i][2] + ' ' + '2019-06-15 Flight Registered');
+            });
         }
         callback();
     }
@@ -97,15 +86,20 @@ export default class Contract {
      }
      isAirline(airline, callback) {
         let self = this;
-        console.log("isairline: "+airline);
         self.flightSuretyApp.methods.isAirline(airline)
+             .call({ from: self.owner}, callback);
+     }
+     isRegisteredFlight(airline, flight, timestamp, callback) {
+        let self = this;
+        self.flightSuretyApp.methods.isRegisteredFlight(airline, flight, timestamp)
              .call({ from: self.owner}, callback);
      }
      buyInsurance(airline, passenger, flightName, timestamp, insuranceAmount, callback){
         let self = this;
         console.log("buy insurance: "+self.owner);
         self.flightSuretyApp.methods.buyInsurance(airline, passenger, flightName, timestamp)
-        .send({from: passenger, value: insuranceAmount}, (error, result) => {
+        .send({from: passenger, value: insuranceAmount, gas:650000}, (error, result) => {
+            console.log(error);
             callback(error, result);
         });
     }
@@ -121,5 +115,14 @@ export default class Contract {
             .send({ from: self.owner}, (error, result) => {
                 callback(error, payload);
             });
+    }
+    requestCredits(insureeAddress, callback) {
+        let self = this;
+        self.flightSuretyApp.methods.payToInsuree(insureeAddress).send({
+            from: insureeAddress
+        }, (error, result) => {
+            console.log(result);
+            callback(error, result);
+        });
     }
 }
