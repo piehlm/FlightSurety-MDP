@@ -48,7 +48,7 @@ export default class Contract {
                 });
 
                 this.flightSuretyApp.methods.fund()
-                .send({from: this.airlines[i], value: 10, gas:650000}, (error, result) => {
+                .send({from: this.airlines[i], value: 10000000000000000000, gas:650000}, (error, result) => {
                     console.log(this.airlines[i] + ' funded');
                 });
             }

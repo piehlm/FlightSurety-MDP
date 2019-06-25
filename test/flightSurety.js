@@ -237,21 +237,18 @@ contract('Flight Surety Tests', async (accounts) => {
     
         let passenger3 = accounts[10];
         let value = web3.utils.toWei('1', "ether");
+        let valueIns = web3.utils.toWei('1.5', "ether");
+        let amount1 = web3.utils.toWei('0', "ether");
+
+        let flight = await config.flightSuretyData.getFlightKey(accounts[2], "1234", "2019-06-12");
     
-        let result= false;
-        
         await config.flightSuretyApp.buyInsurance(accounts[2], passenger3, "1234", "2019-06-12", {from: passenger3, value: value});
     
-        try {
-            await config.flightSuretyApp.processFlightStatus(accounts[2], "1234", "2019-06-12", 20);
-            result = true;
-        }
-        catch(e) {
-            result = false;
-        }
+        await config.flightSuretyApp.processFlightStat(accounts[2], "1234", "2019-06-12", 20);
+        amount1 = await config.flightSuretyData.getInsuranceAmount.call(flight, passenger3);
     
         // ASSERT 
-        assert.equal(result, false, "Can´t pay insurance.");
+        assert.equal(amount1.toString(), valueIns, "Incorrect insurance amount.");
     });
     
     it('(Passengers) Insurance payouts are not sent directly to passenger’s wallet', async () => {

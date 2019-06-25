@@ -1,45 +1,43 @@
 # FlightSurety
 
-FlightSurety is a sample application project for Udacity's Blockchain course.
+FlightSurety-MDP is a working version of a flight insurance application.  The DApp currently excepts only a manually entered in addresses and flights.  Sample data is provided below to simplify the entry process.  The smart contracts contain the full framework to expand the DApp into a far more usable application.  This application is a still a minimum viable product.  This application is easily expandable for a more robust user experience.
+
+Given the challenges of developing this application on a windows platform, we include additional instructions to get you up and running in windows.  If your are not using windows, you can use the standand commands and package.json files originally provided for the project.
 
 ## Install
 
 This repository contains Smart Contract code in Solidity (using Truffle), tests (also using Truffle), dApp scaffolding (using HTML, CSS and JS) and server app scaffolding.
 
-To install, download or clone the repo, then:
-
-https://gist.github.com/jtrefry/fd0ea70a89e2c3b7779c
-
-npm install --global --production windows-build-tools
-(be sure to run as admin)
-npm config set msvs_version 2017 --global
-
+This DApp was designed on a windows platform, so I'll include additional instructions if using windows.
+Windows Only
+    npm install --global --production windows-build-tools
+    (be sure to run as admin)
+    npm config set msvs_version 2017 --global
+    If you are using windows, please copy the contents of the package-windows.json into package.json.  
 'npm i --save ethereum/web3.js'
 `npm install`
 `truffle compile`
 
-ganache-cli -a 50 -l 9999999 -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
+For the purposes of testing, ensure you use the following ganache mnemonic in order to use the test data provided below:
+    ganache-cli -a 50 -l 9999999 -m "candy maple cake sugar pudding cream honey rich smooth crumble sweet treat"
 
 ## Develop Client
-
 To run truffle tests:
-
 `truffle test ./test/flightSurety.js`
 `truffle test ./test/oracles.js`
 
 To use the dapp:
-
 `truffle migrate`
-npm uninstall webpack webpack-cli webpack-dev-server
-npm install --save-dev webpack@latest webpack-cli@latest webpack-dev-server@latest
+for windows:
+    npm uninstall webpack webpack-cli webpack-dev-server
+    npm install --save-dev webpack@latest webpack-cli@latest webpack-dev-server@latest
 `npm run dapp`
 
 To view dapp:
-
 `http://localhost:8000`
 
 ## Develop Server
-be sure to run bash
+For windows, be sure to run this command in a Git bash window.
 `npm run server`
 `truffle test ./test/oracles.js`
 

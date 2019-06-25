@@ -22,6 +22,14 @@ contract FlightSuretyApp {
 
     mapping(address => address[]) private regApproved;
 
+    // Flight status codees
+    uint8 private constant STATUS_CODE_UNKNOWN = 0;
+    uint8 private constant STATUS_CODE_ON_TIME = 10;
+    uint8 private constant STATUS_CODE_LATE_AIRLINE = 20;
+    uint8 private constant STATUS_CODE_LATE_WEATHER = 30;
+    uint8 private constant STATUS_CODE_LATE_TECHNICAL = 40;
+    uint8 private constant STATUS_CODE_LATE_OTHER = 50;
+
     /********************************************************************************************/
     /*                                       FUNCTION MODIFIERS                                 */
     /********************************************************************************************/
@@ -71,7 +79,7 @@ contract FlightSuretyApp {
 
     function() external payable {
         if(msg.value > 10 ether){
-            contractData.fund.value(msg.value)(msg.sender, msg.value);
+            contractData.fund.value(msg.value)(msg.sender);
         }
     }
     /********************************************************************************************/
@@ -174,7 +182,8 @@ contract FlightSuretyApp {
         public
         payable
     {
-        contractData.fund.value(msg.value)(msg.sender, msg.value);
+        require(msg.value >= 10 ether, "Insufficient funding value.");
+        contractData.fund.value(msg.value)(msg.sender);
     }
 
 //----------------------------------------------------------------------------------------------
@@ -244,20 +253,34 @@ contract FlightSuretyApp {
    /**
     * @dev Called after oracle has updated flight status
     */
-    function processFlightStatus
+    function processFlightStat
                             (
                                 address _airline,
                                 string _flt,
                                 string _timestamp,
                                 uint8 _statusCode
                             )
-                                internal
-                                returns(uint256 insTotal)
+                                public
     {
         bytes32 flightKey = contractData.getFlightKey(_airline, _flt, _timestamp);
-        insTotal = contractData.processFlightStatus(flightKey, _statusCode);
+        contractData.processFlightStatus(flightKey, _statusCode);
+        // Interact
+        // 20 = "flight delay due to airline"
+        if (_statusCode == STATUS_CODE_LATE_AIRLINE)
+            creditIns(flightKey, 150);
+        else
+            creditIns(flightKey, 0);
         emit flightProcessed(_airline, _flt, _timestamp, _statusCode);
-        return(insTotal);
+    }
+
+    function creditIns
+                                (
+                                    bytes32 _fltKey,
+                                    uint creditAmount
+                                )
+                                internal
+    {
+        contractData.creditInsurees(_fltKey, creditAmount);
     }
 
 //----------------------------------------------------------------------------------------------
@@ -393,7 +416,7 @@ contract FlightSuretyApp {
             emit FlightStatusInfo(airline, flight, timestamp, statusCode);
 
             // Handle flight status as appropriate
-            processFlightStatus(airline, flight, timestamp, statusCode);
+            processFlightStat(airline, flight, timestamp, statusCode);
         }
     }
 
@@ -454,11 +477,12 @@ contract FlightSuretyData {
     function GetAirlineCount() external returns(uint256 count) {}
     function GetNumVotes() external returns(uint256 count) {}
     function registerAirline(address _NewAirlineAddress) external {}
-    function fund(address _airline, uint256 fundAmount) public payable {}
+    function fund(address _airline) public payable {}
     function getFlightKey(address airline, string memory flight, string memory timestamp) public pure returns(bytes32) {}
     function registerFlight(address _airline, string _flt, string _date) external returns(bool) {}
     function isRegisteredFlight(bytes32 key) public view returns(bool){}
     function buyInsurance(bytes32 manifestID, address passenger, uint256 insuranceAmount) external payable returns(bool) {}
     function payInsurance(bytes32 manifestID, address passenger) external payable {}
-    function processFlightStatus(bytes32 flightKey,uint8 _statusCode) external returns(uint256 insTotal) {}
+    function processFlightStatus(bytes32 flightKey,uint8 _statusCode) external {}
+    function creditInsurees(bytes32 _fltKey, uint creditAmount) external {}
 }

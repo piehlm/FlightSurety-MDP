@@ -1,8 +1,6 @@
-
 import DOM from './dom';
 import Contract from './contract';
 import './flightsurety.css';
-
 
 (async() => {
 
@@ -17,18 +15,18 @@ import './flightsurety.css';
         contract.isOperational((error, result) => {
             display('Operational Status', 'Check if contract is operational', [ { label: 'Operational Status', error: error, value: result} ]);
         });
-        contract.GetAirlineCount((error, result) => {
-            display('Airline Count', 'Check count of reg Airlines', [ { label: 'Airline Count', error: error, value: result} ]);
-        });
+//        contract.GetAirlineCount((error, result) => {
+//            display('Airline Count', 'Check count of reg Airlines', [ { label: 'Airline Count', error: error, value: result} ]);
+//        });
 //        contract.isRegisteredAirline(airline, (error, result) => {
 //            display('Registered Airline', 'Check if airline is registered', [ { label: 'Airline Registered', error: error, value: result} ]);
 //        });
-        contract.isAirline(airline, (error, result) => {
-            display('Funded Airline', 'Check if airline is funded', [ { label: 'Airline Funded', error: error, value: result} ]);
-        });
-        contract.isRegisteredFlight(airline, flight, timestamp, (error, result) => {
-            display('Registered Flight', 'Check if flight is registered', [ { label: 'Flight Registered', error: error, value: result} ]);
-        });
+//        contract.isAirline(airline, (error, result) => {
+//            display('Funded Airline', 'Check if airline is funded', [ { label: 'Airline Funded', error: error, value: result} ]);
+//        });
+//        contract.isRegisteredFlight(airline, flight, timestamp, (error, result) => {
+//            display('Registered Flight', 'Check if flight is registered', [ { label: 'Flight Registered', error: error, value: result} ]);
+//        });
     
         // User-submitted transactions
         DOM.elid('submit-oracle').addEventListener('click', () => {
@@ -51,17 +49,6 @@ import './flightsurety.css';
                 display('Buy Insurance: ',' User clicked on buy insurance button', [ { label: 'Buy Insurance: ', error: error } ]);
             })
         })
-        DOM.elid('requestCredits').addEventListener('click', () => {
-            let insureeAddreess = DOM.elid('passenger-address').value;
-            contract.requestCredits(insureeAddreess, (error, result) => {
-                if(error) {
-                    alert(error);
-                }
-                DOM.elid('insureeAddreess').value = "";
-                display('', 'Credits Refunded', [ { label: 'Credits Refunded', error: error, value: `Passenger:  ${insureeAddreess}`} ], "credits");
-            });            
-        });
-    
     });
     
 

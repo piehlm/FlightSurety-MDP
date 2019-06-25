@@ -35,36 +35,6 @@ const Server = {
       })
       .on('error', error => { console.log(error) })
 
-/*    flightSuretyData.events.airlineRegistered()
-      .on('data', log => {
-        const { returnValues: { origin, newAirline } } = log
-        console.log(`${origin} registered ${newAirline}`)
-      })
-      .on('error', error => { console.log(error) })
-*/
-/*    flightSuretyApp.events.flightRegistered()
-      .on('data', async log => {
-        const {
-          event,
-          returnValues: { flightRef, to, landing }
-        } = log
-        console.log(`${event}: ${flightRef} to ${to} landing ${landing}`)
-
-        // store new flight
-        const indexFlightKeys = await flightSuretyData.methods.indexFlightIdentifiers().call()
-        const key = await flightSuretyData.methods.flightIdentifiers(indexFlightKeys).call()
-        const flight = await flightSuretyData.methods.flights(key).call()
-        for (let j = 0; j < 9; j++) {
-          delete flight[j]
-        }
-        this.flights.push({
-          index: indexFlightKeys,
-          key: key,
-          flight: flight
-        })
-      })
-      .on('error', error => { console.log(error) })
-*/
     flightSuretyApp.events.OracleRequest()
       .on('error', error => { console.log(error) })
       .on('data', async log => {
@@ -102,25 +72,6 @@ const Server = {
         console.log(`${event}: airline ${airline}, flight ${flight}, date ${timestamp}, status ${this.states[statusCode]}`)
       })
 
-/*    flightSuretyApp.events.amountClaimed()
-      .on('data', log => {
-        const { event, returnValues: { recipient } } = log
-        console.log(`${event} from ${recipient}`)
-      })
-*/
-/*    flightSuretyData.events.Paid()
-      .on('data', log => {
-        const { event, returnValues: { recipient, amount } } = log
-        console.log(`${event} ${amount} to ${recipient}`)
-      })
-*/
-
-/*    flightSuretyData.events.Credited()
-      .on('data', log => {
-        const { event, returnValues: { passenger, amount } } = log
-        console.log(`${event} ${amount} to ${passenger}`)
-      })
-*/
     // Authorize
     await flightSuretyData.methods.authorizeCaller(flightSuretyApp._address)
 

@@ -183,15 +183,13 @@ contract FlightSuretyData {
     */
     function fund
                             (
-                                address _airline,
-                                uint256 fundAmount
+                                address _airline
                             )
                             public
                             payable
                             requireAirlineRegistered(_airline)
     {
-        require(fundAmount >= 10 ether, "Insufficient funding value.");
-//        recipient.transfer(fundAmount); //// TODO causes test to fail; not funded
+//        recipient.transfer(msg.value); //// TODO causes test to fail; not funded
         airlines[_airline].isFunded = true;
         authorizedCallers[_airline] = true;
         numFunded = numFunded.add(1);
@@ -268,7 +266,7 @@ contract FlightSuretyData {
                             external
                             payable
     {
-        fund(msg.sender, msg.value);
+        fund(msg.sender);
     }
 
 //----------------------------------------------------------------------------------------------
@@ -302,7 +300,6 @@ contract FlightSuretyData {
     {
         bytes32 manifestId = getManifestId(fltKey, _passenger);
         require(manifestList[manifestId].isTaken == false, "This insurance is already taken.");
-        require(msg.value <= 1 ether," more than one ether.");
         manifestList[manifestId].insuranceAmount = insuranceAmount;
         manifestList[manifestId].passenger = _passenger;
         manifestList[manifestId].isTaken = true;
@@ -323,15 +320,12 @@ contract FlightSuretyData {
                                     bytes32 _fltKey,
                                     uint creditAmount
                                 )
-                                internal
-                                returns(uint256 insTotal)
+                                external
     {
-        insTotal = 0;
         for (uint i = 0; i < passengerList[_fltKey].length; i++) {
             bytes32 manifestId = getManifestId(_fltKey, passengerList[_fltKey][i]);
             if (manifestList[manifestId].isTaken == true) {
                 manifestList[manifestId].insuranceAmount = manifestList[manifestId].insuranceAmount.mul(creditAmount).div(100);
-                insTotal = insTotal.add(manifestList[manifestId].insuranceAmount);
             }
         }
     }
@@ -377,19 +371,11 @@ contract FlightSuretyData {
                                 uint8 _statusCode
                             )
                                 external
-                                returns(uint256 insTotal)
     {
         // Check (modifiers)
         Flight storage flight = flights[flightKey];
         // Effect
         flight.statusCode = _statusCode;
-        // Interact
-        // 20 = "flight delay due to airline"
-        insTotal = 0;
-        if (_statusCode == STATUS_CODE_LATE_AIRLINE)
-            insTotal = insTotal.add(creditInsurees(flightKey, 150));
-        else
-            creditInsurees(flightKey, 0);
     }
 
 }
